@@ -2,6 +2,16 @@ require("dotenv").config();
 const http = require("http");
 const { Client, GatewayIntentBits, Events } = require("discord.js");
 
+const PORT = process.env.PORT || 3000;
+const SLEEP_CHANNEL_NAME = "AFK";
+
+http.createServer((req, res) => {
+  res.writeHead(200, { "Content-Type": "text/plain" });
+  res.end("Bot is running");
+}).listen(PORT, "0.0.0.0", () => {
+  console.log(`HTTP server listening on port ${PORT}`);
+});
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -10,7 +20,6 @@ const client = new Client({
 });
 
 const timers = new Map();
-const SLEEP_CHANNEL_NAME = "AFK";
 
 client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
   const member = newState.member || oldState.member;
@@ -24,18 +33,18 @@ client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
 
         if (!current.channelId || !current.selfDeaf) return;
 
-        const sleepChannel = freshMember.guild.channels.cache.find(
+        const afkChannel = freshMember.guild.channels.cache.find(
           ch =>
             ch.name.toLowerCase() === SLEEP_CHANNEL_NAME.toLowerCase() &&
             ch.isVoiceBased()
         );
 
-        if (!sleepChannel) {
+        if (!afkChannel) {
           console.log("ما لقيت روم AFK في السيرفر");
           return;
         }
 
-        await freshMember.voice.setChannel(sleepChannel);
+        await freshMember.voice.setChannel(afkChannel);
         console.log(`تم نقل ${freshMember.user.tag} إلى ${SLEEP_CHANNEL_NAME}`);
       } catch (err) {
         console.log("فشل النقل:", err.message);
@@ -61,8 +70,3 @@ client.once(Events.ClientReady, () => {
 });
 
 client.login(process.env.TOKEN);
-
-http.createServer((req, res) => {
-  res.writeHead(200);
-  res.end("Bot is running");
-}).listen(process.env.PORT || 3000);
