@@ -51,7 +51,7 @@ client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
       }
 
       timers.delete(member.id);
-    }, 10 * 60 * 1000);
+    }, 30 * 1000);
 
     timers.set(member.id, timer);
   }
